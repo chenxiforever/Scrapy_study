@@ -5,6 +5,7 @@ from urllib.parse import quote
 import json
 import requests
 import MySQLdb
+import time
 from warnings import filterwarnings
 filterwarnings('ignore', category = MySQLdb.Warning)
 
@@ -28,9 +29,9 @@ headers = {
     'Referer':'https://www.lagou.com/jobs/list_%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90?labelWords=&fromSearch=true&suginput=',
     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
 }
-page  = requests.post(url=url,data=data,headers = headers)
-page.encoding ='utf-8'
-position_dic = page.json()
+position_dic  = requests.post(url=url,data=data,headers = headers).json()
+# page.encoding ='utf-8'
+# position_dic = page.json()
 totalCount = position_dic['content']['positionResult']['totalCount']
 PerCount = position_dic['content']['positionResult']['resultSize']
 print('总共%s条记录'%totalCount)
@@ -41,15 +42,14 @@ if tmp[1]:
 else:
     pageCount = tmp[0]
 print('总共%s页\n'%pageCount)
+Count = 1
 for i in range(1,int(pageCount)+1):
     data = {
         'first': True,
         'pn': i,
         'kd': KEYWORD
     }
-    page = requests.post(url=url, data=data, headers=headers)
-    page.encoding = 'utf-8'
-    position_dic = page.json()
+    position_dic = requests.post(url=url, data=data, headers=headers).json()
     position_list = position_dic['content']['positionResult']['result']
     for item in position_list:
         print('公司全称:%s'%item['companyFullName'])
@@ -65,6 +65,9 @@ for i in range(1,int(pageCount)+1):
         print('\n')
         cursor.execute("insert into positionList(公司全称,公司简称,工作地点,公司Id,职位名称,职位Id,工作年限,薪资,详细页面地址,职位关键词) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(item['companyFullName'],item['companyShortName'],item['city'],item['companyId'],item['positionName'],item['positionId'],item['workYear'],item['salary'],detail_url,KEYWORD))
         print('插入一条数据成功')
+        Count+=1
     conn.commit()
+    if Count%150:
+        time.sleep(60)
 cursor.close()
 conn.close()
