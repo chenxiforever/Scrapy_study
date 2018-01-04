@@ -4,6 +4,15 @@
 from urllib.parse import quote
 import json
 import requests
+import MySQLdb
+from warnings import filterwarnings
+filterwarnings('ignore', category = MySQLdb.Warning)
+
+conn = MySQLdb.connect(host='127.0.0.1',user = 'root',passwd = 'chenxi1983##',port = 3306,charset ='utf8')
+cursor = conn.cursor()
+cursor.execute('Create database if not EXISTS lagou')
+cursor.execute('use lagou')
+cursor.execute('Create table if NOT EXISTS positionList(id int primary key AUTO_INCREMENT not null, 公司全称 char(255) not null,公司简称 char(255) not null,公司ID int not null,职位名称 char(255) not null,职位Id int not null,工作年限 char(30) not null,薪资 char(20) not null,详细页面地址 char(255) not null);')
 
 url = 'https://www.lagou.com/jobs/positionAjax.json?city=%E6%88%90%E9%83%BD&needAddtionalResult=false&isSchoolJob=0'
 data = {
@@ -32,3 +41,8 @@ for item in position_list:
     detail_url = 'https://www.lagou.com/jobs/'+str(item['positionId'])+'.html'
     print('详细页面地址:%s'%detail_url)
     print('\n')
+    cursor.execute("insert into positionList(公司全称,公司简称,公司Id,职位名称,职位Id,工作年限,薪资,详细页面地址) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')"%(item['companyFullName'],item['companyShortName'],item['companyId'],item['positionName'],item['positionId'],item['workYear'],item['salary'],detail_url))
+    print('插入一条数据成功')
+conn.commit()
+cursor.close()
+conn.close()
