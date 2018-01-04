@@ -16,8 +16,8 @@ cursor.execute('Create table if NOT EXISTS positionList(id int primary key AUTO_
 
 pagesize = 1
 pageCount = 0
-KEYWORD = '项目经理'
-url = 'https://www.lagou.com/jobs/positionAjax.json?city=%E6%88%90%E9%83%BD&needAddtionalResult=false&isSchoolJob=0'
+KEYWORD = ''
+url = 'https://www.lagou.com/jobs/positionAjax.json?px=new&needAddtionalResult=false&isSchoolJob=0'
 data = {
     'first':True,
     'pn':pagesize,
@@ -51,11 +51,10 @@ for i in range(1,int(pageCount)+1):
     page.encoding = 'utf-8'
     position_dic = page.json()
     position_list = position_dic['content']['positionResult']['result']
-    city = position_dic['content']['positionResult']['locationInfo']['city']
     for item in position_list:
         print('公司全称:%s'%item['companyFullName'])
         print('公司名称:%s'%item['companyShortName'])
-        print('工作地点:%s'%city)
+        print('工作地点:%s'%item['city'])
         print('公司ID:%s'%item['companyId'])
         print('职位名称:%s'%item['positionName'])
         print('职位ID:%s'%item['positionId'])
@@ -64,8 +63,8 @@ for i in range(1,int(pageCount)+1):
         detail_url = 'https://www.lagou.com/jobs/'+str(item['positionId'])+'.html'
         print('详细页面地址:%s'%detail_url)
         print('\n')
-        cursor.execute("insert into positionList(公司全称,公司简称,工作地点,公司Id,职位名称,职位Id,工作年限,薪资,详细页面地址,职位关键词) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(item['companyFullName'],item['companyShortName'],city,item['companyId'],item['positionName'],item['positionId'],item['workYear'],item['salary'],detail_url,KEYWORD))
+        cursor.execute("insert into positionList(公司全称,公司简称,工作地点,公司Id,职位名称,职位Id,工作年限,薪资,详细页面地址,职位关键词) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(item['companyFullName'],item['companyShortName'],item['city'],item['companyId'],item['positionName'],item['positionId'],item['workYear'],item['salary'],detail_url,KEYWORD))
         print('插入一条数据成功')
-conn.commit()
+    conn.commit()
 cursor.close()
 conn.close()
