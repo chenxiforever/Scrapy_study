@@ -29,9 +29,8 @@ headers = {
     'Referer':'https://www.lagou.com/jobs/list_%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90?labelWords=&fromSearch=true&suginput=',
     'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
 }
-position_dic  = requests.post(url=url,data=data,headers = headers).json()
-# page.encoding ='utf-8'
-# position_dic = page.json()
+position_dic  = requests.post(url=url,data=data,headers = headers).text
+position_dic = json.loads(position_dic)
 totalCount = position_dic['content']['positionResult']['totalCount']
 PerCount = position_dic['content']['positionResult']['resultSize']
 print('总共%s条记录'%totalCount)
@@ -49,25 +48,30 @@ for i in range(1,int(pageCount)+1):
         'pn': i,
         'kd': KEYWORD
     }
-    position_dic = requests.post(url=url, data=data, headers=headers).json()
-    position_list = position_dic['content']['positionResult']['result']
-    for item in position_list:
-        print('公司全称:%s'%item['companyFullName'])
-        print('公司名称:%s'%item['companyShortName'])
-        print('工作地点:%s'%item['city'])
-        print('公司ID:%s'%item['companyId'])
-        print('职位名称:%s'%item['positionName'])
-        print('职位ID:%s'%item['positionId'])
-        print('工作年限:%s'%item['workYear'])
-        print('薪资:%s'%item['salary'])
-        detail_url = 'https://www.lagou.com/jobs/'+str(item['positionId'])+'.html'
-        print('详细页面地址:%s'%detail_url)
-        print('\n')
-        cursor.execute("insert into positionList(公司全称,公司简称,工作地点,公司Id,职位名称,职位Id,工作年限,薪资,详细页面地址,职位关键词) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(item['companyFullName'],item['companyShortName'],item['city'],item['companyId'],item['positionName'],item['positionId'],item['workYear'],item['salary'],detail_url,KEYWORD))
-        print('插入一条数据成功')
-        Count+=1
-    conn.commit()
-    if Count%150:
-        time.sleep(60)
+    try:
+        position_dic = requests.post(url=url, data=data, headers=headers).text
+        position_dic = json.loads(position_dic)
+        position_list = position_dic['content']['positionResult']['result']
+        for item in position_list:
+            # if Count%150 == 0:
+            #     print('不要走开，广告60秒后精彩继续~~o(*￣︶￣*)o')
+            #     time.sleep(60)
+            print('公司全称:%s'%item['companyFullName'])
+            print('公司名称:%s'%item['companyShortName'])
+            print('工作地点:%s'%item['city'])
+            print('公司ID:%s'%item['companyId'])
+            print('职位名称:%s'%item['positionName'])
+            print('职位ID:%s'%item['positionId'])
+            print('工作年限:%s'%item['workYear'])
+            print('薪资:%s'%item['salary'])
+            detail_url = 'https://www.lagou.com/jobs/'+str(item['positionId'])+'.html'
+            print('详细页面地址:%s'%detail_url)
+            cursor.execute("insert into positionList(公司全称,公司简称,工作地点,公司Id,职位名称,职位Id,工作年限,薪资,详细页面地址,职位关键词) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(item['companyFullName'],item['companyShortName'],item['city'],item['companyId'],item['positionName'],item['positionId'],item['workYear'],item['salary'],detail_url,KEYWORD))
+            print('插入一条数据成功')
+            print('\n')
+            Count+=1
+        conn.commit()
+    except Exception as e:
+        print(e)
 cursor.close()
 conn.close()
