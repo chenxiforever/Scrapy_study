@@ -149,7 +149,10 @@ def url(data):
             get_job(data)
 
 if __name__ == '__main__':
-    url(data)
+    try:
+        url(data)
+    except Exception as e:
+        print(e)
     cursor.close()
     conn.close()
 
