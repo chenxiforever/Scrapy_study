@@ -3,7 +3,7 @@
 # Author:Chenxiforever
 #*********************************************************************
 #设计思路：通过网站静态页面爬取，获得整站职位关键词，再逐个关键词爬取职位信息     *
-#                             程序版本v1.4                             *
+#                             程序版本v2.0                             *
 #*********************************************************************
 
 from bs4 import BeautifulSoup
@@ -45,7 +45,7 @@ def get_json(pageNum,keyword):                               #通过url获取反
         'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36',
     }
     url = 'https://www.lagou.com/jobs/positionAjax.json?px=default&needAddtionalResult=false&isSchoolJob=0'
-    count = 3              #异常处理次数为3,处理连接超时次数为3次
+    count = 3              #异常处理次数为3,远程服务器强制关闭连接后尝试3次
     while count:
         try:
             html = requests.post(url = url,data = data, headers = headers)
@@ -54,18 +54,17 @@ def get_json(pageNum,keyword):                               #通过url获取反
             print('网络连接异常，60秒后自动重试.')
             time.sleep(60)              #异常
             continue
+            count -= 1
         else:
+            count = 3
             position_dic = json.loads(html.text)
             return position_dic
 
 #获取职位信息函数
-def get_position(keywords):      #获取某关键词爬取到的职位信息字典，输入为职位列表，考虑到使用列表，是为了在本函数中加入异常处理，针对没有获取到'content'的情况设计。
+def get_position(keyword):      #获取某关键词爬取到的职位信息字典
     positionInfo_dic = {}        #定义一个字典，用于存放爬取到的职位信息
     positionIdList = []           #定义一个职位ID列表，作为后面查找的索引
-    keyword = '网络工程师'
     InfoList = []
-    '''预留获取keyword的代码空间
-    '''
     try:
         position_dic = get_json(1,keyword)
     except Exception as e:
@@ -156,7 +155,7 @@ def Createtable():
     conn.close()
     print('数据库及数据表创建完成。')
 
-def saveData():
+def saveData(InfoList):
     try:
         Createtable()
     except Exception as e:
@@ -165,7 +164,6 @@ def saveData():
     conn = MySQLdb.connect(host='127.0.0.1', user='root', passwd='chenxi1983##', port=3306, charset='utf8')
     cursor = conn.cursor()
     cursor.execute('use lagou')
-    InfoList = get_position(keywords)    #positionIdList为职位ID列表,positionInfo_dic为整个职位信息字典
     for dic in (InfoList):
         companyFullName = dic['companyFullName']
         companyId = dic['companyId']
@@ -191,7 +189,18 @@ def saveData():
     cursor.close()
     conn.close()
 
-saveData()
+def main():
+    keywords = get_keywords()                  #获取职位名称列表
+    for keyword in keywords:                   #循环获取职位名称
+        print(keyword)
+        InfoList = get_position(keyword)       #获取职位名称对应的职位数据列表
+        print(InfoList)
+        saveData(InfoList)                     #将职位数据写入数据库
+        print('职位:%s采集结束，广告60秒后，精彩继续~~~~'%keyword)
+        time.sleep(60)
+
+if __name__ == '__main__':
+    main()
 
 
 
