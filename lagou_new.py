@@ -3,7 +3,7 @@
 # Author:Chenxiforever
 #*********************************************************************
 #设计思路：通过网站静态页面爬取，获得整站职位关键词，再逐个关键词爬取职位信息     *
-#                             程序版本v1.3                             *
+#                             程序版本v1.4                             *
 #*********************************************************************
 
 from bs4 import BeautifulSoup
@@ -62,11 +62,12 @@ def get_json(pageNum,keyword):                               #通过url获取反
 def get_position(keywords):      #获取某关键词爬取到的职位信息字典，输入为职位列表，考虑到使用列表，是为了在本函数中加入异常处理，针对没有获取到'content'的情况设计。
     positionInfo_dic = {}        #定义一个字典，用于存放爬取到的职位信息
     positionIdList = []           #定义一个职位ID列表，作为后面查找的索引
+    keyword = '网络工程师'
     InfoList = []
     '''预留获取keyword的代码空间
     '''
     try:
-        position_dic = get_json(1,'python') #'python'等测试成功就使用keyword变量替换
+        position_dic = get_json(1,keyword)
     except Exception as e:
         print(e)
     else:
@@ -82,7 +83,7 @@ def get_position(keywords):      #获取某关键词爬取到的职位信息字�
                 pageSize = tmp[0]
         #获取总记录数与总页数代码结束
         for pageNum in range(1,pageSize+1):
-            position_dic = get_json(pageNum, 'python')
+            position_dic = get_json(pageNum, keyword)
             positionInfoList = position_dic['content']['positionResult']['result']    #positionInfoList为list类型
             #{companyId: 148909, positionName: "Python开发工程师", workYear: "3-5年", education: "本科", jobNature: "全职"}
             print(positionInfoList)
@@ -102,22 +103,6 @@ def get_position(keywords):      #获取某关键词爬取到的职位信息字�
                 secondType = positions['secondType']
                 positionAdvantage = positions['positionAdvantage']
                 createTime = positions['createTime']
-
-                print(companyFullName)
-                print(companyId)
-                print(positionName)
-                print(positionId)
-                print(salary)
-                print(city)
-                print(district)
-                print(workYear)
-                print(education)
-                print(jobNature)
-                print(firstType)
-                print(secondType)
-                print(positionAdvantage)
-                print(createTime)
-                print('\n')
 
                 SinglePositionInfo['companyFullName'] = companyFullName
                 SinglePositionInfo['companyId'] = companyId
@@ -182,32 +167,31 @@ def saveData():
     cursor.execute('use lagou')
     InfoList = get_position(keywords)    #positionIdList为职位ID列表,positionInfo_dic为整个职位信息字典
     for dic in (InfoList):
-        print(dic)
-        # companyFullName = InfoList[i]['companyFullName']
-        # companyId = InfoList[i]['companyId']
-        # positionName = InfoList[i]['positionName']
-        # positionId = InfoList[i]['positionId']
-        # salary = InfoList[i]['salary']
-        # city = InfoList[i]['city']
-        # district = InfoList[i]['district']
-        # workYear = InfoList[i]['workYear']
-        # education = InfoList[i]['education']
-        # jobNature = InfoList[i]['jobNature']
-        # firstType = InfoList[i]['firstType']
-        # secondType = InfoList[i]['secondType']
-        # positionAdvantage = InfoList[i]['positionAdvantage']
-        # createTime = InfoList[i]['createTime']
-    #     try:
-    #         cursor.execute("insert into positionInfo(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime))
-    #     except Exception as e:
-    #         print('插入数据库失败，错误代码%s'%e)
-    #     else:
-    #         print('成功写入一条数据。')
-    # conn.commit()
-    # cursor.close()
-    # conn.close()
+        companyFullName = dic['companyFullName']
+        companyId = dic['companyId']
+        positionName = dic['positionName']
+        positionId = dic['positionId']
+        salary = dic['salary']
+        city = dic['city']
+        district = dic['district']
+        workYear = dic['workYear']
+        education = dic['education']
+        jobNature = dic['jobNature']
+        firstType = dic['firstType']
+        secondType = dic['secondType']
+        positionAdvantage = dic['positionAdvantage']
+        createTime = dic['createTime']
+        try:
+            cursor.execute("insert into positionInfo(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime))
+        except Exception as e:
+            print('插入数据库失败，错误代码%s'%e)
+        else:
+            print('成功写入一条数据。职位ID为:%s'%positionId)
+        conn.commit()
+    cursor.close()
+    conn.close()
 
-# saveData()
+saveData()
 
 
 
