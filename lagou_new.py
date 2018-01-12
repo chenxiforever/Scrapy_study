@@ -155,6 +155,7 @@ def Createtable():
     conn.close()
     print('数据库及数据表创建完成。')
 
+#将数据写入数据库函数
 def saveData(InfoList):
     try:
         Createtable()
@@ -180,7 +181,7 @@ def saveData(InfoList):
         positionAdvantage = dic['positionAdvantage']
         createTime = dic['createTime']
         try:
-            cursor.execute("insert into positionInfo(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime))
+            cursor.execute("insert ignore into positionInfo(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')"%(companyFullName,companyId,positionName,positionId,salary,city,district,workYear,education,jobNature,firstType,secondType,positionAdvantage,createTime))
         except Exception as e:
             print('插入数据库失败，错误代码%s'%e)
         else:
